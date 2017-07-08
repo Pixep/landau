@@ -54,6 +54,7 @@ namespace UnityStandardAssets.Vehicles.Car
         public float MaxSpeed{get { return m_Topspeed; }}
         public float Revs { get; private set; }
         public float AccelInput { get; private set; }
+        public bool AutomaticControl { get; set; }
 
         // Use this for initialization
         private void Start()
@@ -125,6 +126,16 @@ namespace UnityStandardAssets.Vehicles.Car
             Revs = ULerp(revsRangeMin, revsRangeMax, m_GearFactor);
         }
 
+        public void ManualControl(float steering, float accel, float footbrake, float handbrake)
+        {
+            if (AutomaticControl)
+            {
+                if (steering == 0 && accel == 0 && footbrake == 0 && handbrake == 0)
+                    return;
+            }
+
+            Move(steering, accel, footbrake, handbrake);
+        }
 
         public void Move(float steering, float accel, float footbrake, float handbrake)
         {
