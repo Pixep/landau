@@ -9,6 +9,7 @@ namespace Landau
         public MainControlUnit ControlUnit { get; set; }
 
         private WebSocket m_webSocket = null;
+        private string m_webSocketUrl = "ws://localhost:5880";
 
         [Serializable]
         private class Command
@@ -41,7 +42,7 @@ namespace Landau
 
         private void ConnectToWebSocket()
         {
-            m_webSocket = new WebSocket("ws://localhost:5880");
+            m_webSocket = new WebSocket(m_webSocketUrl);
             m_webSocket.OnMessage += (sender, e) =>
                 Decode(e.Data);
 
