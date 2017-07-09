@@ -1,5 +1,6 @@
 ﻿using System;
 using UnityEngine;
+using WebSocketSharp;
 
 namespace Landau
 {
@@ -7,10 +8,7 @@ namespace Landau
     {
         public MainControlUnit ControlUnit { get; set; }
 
-        public BasicControlUnitProtocol(MainControlUnit controlUnit)
-        {
-            ControlUnit = controlUnit;
-        }
+        private WebSocket m_webSocket = null;
 
         [Serializable]
         private class Command
@@ -33,6 +31,21 @@ namespace Landau
             {
                 return JsonUtility.FromJson<ControlValues>(json);
             }
+        }
+
+        public BasicControlUnitProtocol(MainControlUnit controlUnit)
+        {
+            ControlUnit = controlUnit;
+            ConnectToWebSocket();
+        }
+
+        private void ConnectToWebSocket()
+        {
+            m_webSocket = new WebSocket("ws://localhost:5880");
+            m_webSocket.OnMessage += (sender, e) =>
+                Decode(e.Data);
+
+            m_webSocket.Connect();
         }
 
         /*

@@ -61,9 +61,6 @@ namespace Landau
         {
             m_running = true;
 
-            Acceleration = 0.5f;
-            m_protocol.Decode("{\"id\": 0, \"steering\": 0.3, \"acceleration\": 0.3 }");
-
             if (m_carController)
                 m_carController.AutomaticControl = true;
         }
