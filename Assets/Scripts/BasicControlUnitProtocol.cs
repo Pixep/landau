@@ -46,7 +46,7 @@ namespace Landau
             m_webSocket.OnMessage += (sender, e) =>
                 Decode(e.Data);
 
-            m_webSocket.Connect();
+            m_webSocket.ConnectAsync();
         }
 
         /*
