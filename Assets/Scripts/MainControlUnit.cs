@@ -8,9 +8,18 @@ public class MainControlUnit : MonoBehaviour {
     public bool m_running = false;
     [SerializeField] private CarController m_carController;
 
+    float Steering { get; set; }
+    float Acceleration { get; set; }
+    float Brake { get; set; }
+    float HandBrake { get; set; }
+
     // Use this for initialization
     void Start()
     {
+        if (m_running)
+            StartUnit();
+        else
+            ResetUnit();
     }
 
     // Update is called once per frame
@@ -27,20 +36,30 @@ public class MainControlUnit : MonoBehaviour {
         }
 
         // Steering, Acceleration, Brake, Handbrake
-        m_carController.Move(0, 0.5f, 0, 0);
+        m_carController.Move(Steering, Acceleration, Brake, HandBrake);
     }
 
-    public void StartUnit() {
+    public void ResetUnit()
+    {
+        m_running = false;
+        Steering = Acceleration = Brake = HandBrake = 0;
+
+        if (m_carController)
+            m_carController.AutomaticControl = false;
+    } 
+
+    public void StartUnit()
+    {
         m_running = true;
+
+        Acceleration = 0.5f;
 
         if (m_carController)
             m_carController.AutomaticControl = true;
     }
 
-    public void StopUnit() {
-        m_running = false;
-
-        if (m_carController)
-            m_carController.AutomaticControl = false;
+    public void StopUnit()
+    {
+        ResetUnit();
     }
 }
