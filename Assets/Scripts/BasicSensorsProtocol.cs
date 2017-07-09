@@ -17,6 +17,12 @@ namespace Landau {
             ConnectToWebSocket();
         }
 
+        private void ConnectToWebSocket()
+        {
+            m_webSocket = new WebSocket(m_webSocketUrl);
+            m_webSocket.ConnectAsync();
+        }
+
         /*
          * Publish values
          */
@@ -28,12 +34,6 @@ namespace Landau {
 
             string payloadString = JsonUtility.ToJson(payload);
             m_webSocket.Send(payloadString);
-        }
-
-        private void ConnectToWebSocket()
-        {
-            m_webSocket = new WebSocket(m_webSocketUrl);
-            m_webSocket.ConnectAsync();
         }
     }
 }
