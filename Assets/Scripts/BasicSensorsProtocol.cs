@@ -27,7 +27,7 @@ namespace Landau {
                 return;
 
             string payloadString = JsonUtility.ToJson(payload);
-            m_webSocket.SendAsync(Encoding.ASCII.GetBytes(payloadString), null);
+            m_webSocket.Send(payloadString);
         }
 
         private void ConnectToWebSocket()
