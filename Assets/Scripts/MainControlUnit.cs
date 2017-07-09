@@ -3,63 +3,74 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityStandardAssets.Vehicles.Car;
 
-public class MainControlUnit : MonoBehaviour {
-
-    public bool m_running = false;
-    [SerializeField] private CarController m_carController;
-
-    float Steering { get; set; }
-    float Acceleration { get; set; }
-    float Brake { get; set; }
-    float HandBrake { get; set; }
-
-    // Use this for initialization
-    void Start()
+namespace Landau
+{
+    public class MainControlUnit : MonoBehaviour
     {
-        if (m_running)
-            StartUnit();
-        else
-            ResetUnit();
-    }
 
-    // Update is called once per frame
-    void Update()
-    {
-        if (!m_running)
-            return;
+        public bool m_running = false;
+        [SerializeField]
+        private CarController m_carController;
 
-        if (!m_carController)
+        public float Steering { get; set; }
+        public float Acceleration { get; set; }
+        public float Brake { get; set; }
+        public float HandBrake { get; set; }
+
+        private MainFactory m_factory = new MainFactory();
+        private IControlUnitProtocol m_protocol;
+
+        // Use this for initialization
+        void Start()
         {
-            Debug.Log("No car controller set");
-            StopUnit();
-            return;
+            m_protocol = m_factory.CreateProtocol(this);
+
+            if (m_running)
+                StartUnit();
+            else
+                ResetUnit();
         }
 
-        // Steering, Acceleration, Brake, Handbrake
-        m_carController.Move(Steering, Acceleration, Brake, HandBrake);
-    }
+        // Update is called once per frame
+        void Update()
+        {
+            if (!m_running)
+                return;
 
-    public void ResetUnit()
-    {
-        m_running = false;
-        Steering = Acceleration = Brake = HandBrake = 0;
+            if (!m_carController)
+            {
+                Debug.Log("No car controller set");
+                StopUnit();
+                return;
+            }
 
-        if (m_carController)
-            m_carController.AutomaticControl = false;
-    } 
+            // Steering, Acceleration, Brake, Handbrake
+            m_carController.Move(Steering, Acceleration, Brake, HandBrake);
+        }
 
-    public void StartUnit()
-    {
-        m_running = true;
+        public void ResetUnit()
+        {
+            m_running = false;
+            Steering = Acceleration = Brake = HandBrake = 0;
 
-        Acceleration = 0.5f;
+            if (m_carController)
+                m_carController.AutomaticControl = false;
+        }
 
-        if (m_carController)
-            m_carController.AutomaticControl = true;
-    }
+        public void StartUnit()
+        {
+            m_running = true;
 
-    public void StopUnit()
-    {
-        ResetUnit();
+            Acceleration = 0.5f;
+            m_protocol.Decode("{\"id\": 0, \"steering\": 0.3, \"acceleration\": 0.3 }");
+
+            if (m_carController)
+                m_carController.AutomaticControl = true;
+        }
+
+        public void StopUnit()
+        {
+            ResetUnit();
+        }
     }
 }
