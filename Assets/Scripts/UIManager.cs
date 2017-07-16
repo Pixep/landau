@@ -25,9 +25,13 @@ namespace Landau {
             Main.Instance().SetUIManager(this);
         }
 
-        // Update is called once per frame
-        void Update() {
-
+        public void StartAutomaticControl()
+        {
+            Main.Instance().ControlUnit().StartUnit();
+        }
+        public void StopAutomaticControl()
+        {
+            Main.Instance().ControlUnit().StopUnit();
         }
     }
 }

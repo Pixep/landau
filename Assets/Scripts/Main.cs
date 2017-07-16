@@ -10,6 +10,9 @@ namespace Landau {
         static public MainFactory Factory = new MainFactory();
         static public UIManager UIManager() { return _uiManager; }
 
+        public ControlUnit ControlUnit() { return _controlUnit; }
+        public SensorsManager SensorsMgr() { return _sensorsManager; }
+
         private SensorsManager _sensorsManager;
         private ControlUnit _controlUnit;
 
