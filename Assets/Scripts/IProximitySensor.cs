@@ -4,8 +4,8 @@ using UnityEngine;
 
 namespace Landau
 {
-    public interface IProximitySensor : ISensor
+    public interface IBinarySensor : ISensor
     {
-        bool IsTriggered { get; }
+        bool Value { get; }
     }
 }
