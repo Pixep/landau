@@ -5,12 +5,14 @@ namespace Landau
 {
     public class SimpleProximitySensor : MonoBehaviour, IProximitySensor
     {
+        public bool IsTriggered { get; private set; }
+        public ISensorObserver Observer { get; set; }
+
         public void Start()
         {
             SensorsManager.Instance().RegisterSensor(this);
         }
-
-        public bool IsTriggered { get; private set; }
+        
         public SensorPayload GetValue()
         {
             byte[] data = new byte[1];
@@ -21,10 +23,19 @@ namespace Landau
         private void OnTriggerEnter(Collider other)
         {
             IsTriggered = true;
+            NotifyObserver();
         }
+
         private void OnTriggerExit(Collider other)
         {
             IsTriggered = false;
+            NotifyObserver();
+        }
+
+        private void NotifyObserver()
+        {
+            if (Observer != null)
+                Observer.Notify(this);
         }
     }
 }

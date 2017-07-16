@@ -1,11 +1,12 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 using UnityEngine;
 
 namespace Landau
 {
-    public class SensorsManager : MonoBehaviour
+    public class SensorsManager : MonoBehaviour, ISensorObserver
     {
         private MainFactory m_factory = new MainFactory();
         private ISensorsProtocol m_protocol;
@@ -32,24 +33,18 @@ namespace Landau
         public void RegisterSensor(ISensor sensor)
         {
             m_sensors.Add(sensor);
+            sensor.Observer = this;
         }
 
         // Update is called once per frame
-        private int it = 0;
         void Update()
         {
-            ++it;
-            if (it >= 100)
-            {
-                it = 0;
+        }
 
-                //SensorPayload payload = new SensorPayload(1, 35, Encoding.ASCII.GetBytes(value));
-                foreach (ISensor sensor in m_sensors)
-                {
-                    SensorPayload payload = sensor.GetValue();
-                    m_protocol.SendValue(payload);
-                }
-            }
+        public void Notify(ISensor sensor)
+        {
+            SensorPayload payload = sensor.GetValue();
+            m_protocol.SendValue(payload);
         }
     }
 }
