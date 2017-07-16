@@ -2,9 +2,14 @@
 {
     public class MainFactory
     {
-        public IControlUnitProtocol CreateProtocol(MainControlUnit controlUnit)
+        public IControlUnitProtocol CreateControlProtocol(MainControlUnit controlUnit)
         {
             return new BasicControlUnitProtocol(controlUnit);
+        }
+
+        public ISensorsProtocol CreateSensorsProtocol(SensorsManager sensorsManager)
+        {
+            return new BasicSensorsProtocol(sensorsManager);
         }
     }
 }

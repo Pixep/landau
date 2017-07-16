@@ -7,7 +7,6 @@ namespace Landau
 {
     public class MainControlUnit : MonoBehaviour
     {
-
         public bool m_running = false;
         [SerializeField]
         private CarController m_carController;
@@ -23,7 +22,7 @@ namespace Landau
         // Use this for initialization
         void Start()
         {
-            m_protocol = m_factory.CreateProtocol(this);
+            m_protocol = m_factory.CreateControlProtocol(this);
 
             if (m_running)
                 StartUnit();
