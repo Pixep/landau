@@ -5,7 +5,7 @@ using UnityStandardAssets.Vehicles.Car;
 
 namespace Landau
 {
-    public class MainControlUnit : MonoBehaviour
+    public class ControlUnit : MonoBehaviour
     {
         public bool m_running = false;
         [SerializeField]
@@ -15,14 +15,14 @@ namespace Landau
         public float Acceleration { get; set; }
         public float Brake { get; set; }
         public float HandBrake { get; set; }
-
-        private MainFactory m_factory = new MainFactory();
+        
         private IControlUnitProtocol m_protocol;
 
         // Use this for initialization
         void Start()
         {
-            m_protocol = m_factory.CreateControlProtocol(this);
+            Main.Instance().SetControlUnit(this);
+            m_protocol = Main.Factory.CreateControlProtocol(this);
 
             if (m_running)
                 StartUnit();

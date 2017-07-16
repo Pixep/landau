@@ -6,27 +6,24 @@ using UnityEngine;
 
 namespace Landau
 {
-    public class SensorsManager : MonoBehaviour, ISensorObserver
+    public class SensorsManager : ISensorObserver
     {
-        private MainFactory m_factory = new MainFactory();
         private ISensorsProtocol m_protocol;
         private List<ISensor> m_sensors = new List<ISensor>();
 
         static private SensorsManager m_instance;
         static public SensorsManager Instance()
         {
+            if (m_instance == null)
+                m_instance = new SensorsManager();
+
             return m_instance;
         }
 
         SensorsManager()
         {
             m_instance = this;
-        }
-
-        // Use this for initialization
-        void Start()
-        {
-            m_protocol = m_factory.CreateSensorsProtocol(this);
+            m_protocol = Main.Factory.CreateSensorsProtocol(this);
         }
 
         // Register a sensor
