@@ -6,10 +6,15 @@ namespace Landau
 {
     public class BasicControlUnitProtocol : IControlUnitProtocol
     {
-        public MainControlUnit ControlUnit { get; set; }
+        public ProtocolState State { get; private set; }
+        public ControlUnit ControlUnit { get; set; }
 
         private WebSocket m_webSocket = null;
         private string m_webSocketUrl = "ws://localhost:5880";
+
+        public event EventHandler Disconnected;
+        public event EventHandler Connecting;
+        public event EventHandler Connected;
 
         [Serializable]
         private class Command
@@ -34,7 +39,7 @@ namespace Landau
             }
         }
 
-        public BasicControlUnitProtocol(MainControlUnit controlUnit)
+        public BasicControlUnitProtocol(ControlUnit controlUnit)
         {
             ControlUnit = controlUnit;
             ConnectToWebSocket();
@@ -46,7 +51,23 @@ namespace Landau
             m_webSocket.OnMessage += (sender, e) =>
                 Decode(e.Data);
 
+            m_webSocket.OnClose += ConnectionClosed;
+            m_webSocket.OnError += ConnectionClosed;
+            m_webSocket.OnOpen += ConnectionOpened;
+
             m_webSocket.ConnectAsync();
+        }
+
+        private void ConnectionClosed(object sender, EventArgs e)
+        {
+            State = ProtocolState.DisconnectedState;
+            Disconnected(this, null);
+        }
+
+        private void ConnectionOpened(object sender, EventArgs e)
+        {
+            State = ProtocolState.ConnectedState;
+            Connected(this, null);
         }
 
         /*

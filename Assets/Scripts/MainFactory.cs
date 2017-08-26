@@ -2,7 +2,7 @@
 {
     public class MainFactory
     {
-        public IControlUnitProtocol CreateControlProtocol(MainControlUnit controlUnit)
+        public IControlUnitProtocol CreateControlProtocol(ControlUnit controlUnit)
         {
             return new BasicControlUnitProtocol(controlUnit);
         }
