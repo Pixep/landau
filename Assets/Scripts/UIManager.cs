@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System;
 using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.UI;
@@ -8,8 +7,10 @@ namespace Landau {
     public class UIManager : MonoBehaviour {
         static private UIManager _instance;
 
-        private Button StartButton;
-        private Button StopButton;
+        private Button _startButton;
+        private Button _stopButton;
+
+        private ControlUnit _controlUnit;
 
         void Awake()
         {
@@ -23,29 +24,56 @@ namespace Landau {
                 Debug.Log("UIManager already instantiated");
                 Destroy(this);
             }
+
+            Main.Instance().SetUIManager(this);
         }
 
         // Use this for initialization
         void Start() {
-            Main.Instance().SetUIManager(this);
+            Main.Instance().ControlUnit().Protocol.Connected += ControlUnitStateChanged;
+            Main.Instance().ControlUnit().Protocol.Disconnected += ControlUnitStateChanged;
 
-            StartButton = GameObject.Find("StartControlButton").GetComponent<Button>();
-            Assert.IsNotNull(StartButton);
-            StopButton = GameObject.Find("StopControlButton").GetComponent<Button>();
-            Assert.IsNotNull(StopButton);
+            _startButton = GameObject.Find("StartControlButton").GetComponent<Button>();
+            Assert.IsNotNull(_startButton);
+            _stopButton = GameObject.Find("StopControlButton").GetComponent<Button>();
+            Assert.IsNotNull(_stopButton);
         }
 
-        public void StartAutomaticControl()
+        public void ToggleControl()
         {
-            Main.Instance().ControlUnit().StartUnit();
-            StartButton.interactable = false;
-            StopButton.interactable = true;
+            if (Main.Instance().ControlUnit()._running)
+                Main.Instance().ControlUnit().StartUnit();
+            else
+                Main.Instance().ControlUnit().StopUnit();
+
+            UpdateButtonsState();
         }
-        public void StopAutomaticControl()
+        public void UpdateButtonsState()
         {
-            Main.Instance().ControlUnit().StopUnit();
-            StartButton.interactable = true;
-            StopButton.interactable = false;
+            ProtocolState state = Main.Instance().ControlUnit().Protocol.State;
+            String text = "";
+            if (state != ProtocolState.ConnectedState)
+            {
+                text = "CU offline";
+                _startButton.interactable = false;
+            }
+            else if (Main.Instance().ControlUnit()._running)
+            {
+                text = "Stop";
+                _startButton.interactable = false;
+            }
+            else
+            {
+                text = "Start";
+                _startButton.interactable = true;
+            }
+
+            _startButton.GetComponentInChildren<Text>().text = text;
+        }
+
+        private void ControlUnitStateChanged(object sender, EventArgs e)
+        {
+            UpdateButtonsState();
         }
     }
 }

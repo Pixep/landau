@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using WebSocketSharp;
 
@@ -42,6 +44,7 @@ namespace Landau
         public BasicControlUnitProtocol(ControlUnit controlUnit)
         {
             ControlUnit = controlUnit;
+            State = ProtocolState.DisconnectedState;
             ConnectToWebSocket();
         }
 
@@ -51,23 +54,35 @@ namespace Landau
             m_webSocket.OnMessage += (sender, e) =>
                 Decode(e.Data);
 
-            m_webSocket.OnClose += ConnectionClosed;
-            m_webSocket.OnError += ConnectionClosed;
-            m_webSocket.OnOpen += ConnectionOpened;
+            m_webSocket.OnClose += ConnectionClosedThreaded;
+            m_webSocket.OnError += ConnectionClosedThreaded;
+            m_webSocket.OnOpen += ConnectionOpenedThreaded;
 
             m_webSocket.ConnectAsync();
         }
 
-        private void ConnectionClosed(object sender, EventArgs e)
+        private void ConnectionClosedThreaded(object sender, EventArgs e)
+        {
+            UnityMainThreadDispatcher.Instance().Enqueue(ConnectionClosed());
+        }
+
+        private void ConnectionOpenedThreaded(object sender, EventArgs e)
+        {
+            UnityMainThreadDispatcher.Instance().Enqueue(ConnectionOpened());
+        }
+
+        private IEnumerator ConnectionClosed()
         {
             State = ProtocolState.DisconnectedState;
             Disconnected(this, null);
+            yield return null;
         }
 
-        private void ConnectionOpened(object sender, EventArgs e)
+        private IEnumerator ConnectionOpened()
         {
             State = ProtocolState.ConnectedState;
             Connected(this, null);
+            yield return null;
         }
 
         /*

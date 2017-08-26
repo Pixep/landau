@@ -34,6 +34,7 @@ namespace Landau {
 
         void Init()
         {
+            gameObject.AddComponent(typeof(UnityMainThreadDispatcher));
             _sensorsManager = SensorsManager.Instance();
         }
 
