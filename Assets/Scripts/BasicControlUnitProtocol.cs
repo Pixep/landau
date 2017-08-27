@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using WebSocketSharp;
 
@@ -9,14 +8,14 @@ namespace Landau
     public class BasicControlUnitProtocol : IControlUnitProtocol
     {
         public ProtocolState State { get; private set; }
+        public event EventHandler Disconnected;
+        public event EventHandler Connecting;
+        public event EventHandler Connected;
+
         public ControlUnit ControlUnit { get; set; }
 
         private WebSocket _webSocket = null;
         private string _webSocketUrl = "ws://localhost:5880";
-
-        public event EventHandler Disconnected;
-        public event EventHandler Connecting;
-        public event EventHandler Connected;
 
         [Serializable]
         private class Command
@@ -59,7 +58,6 @@ namespace Landau
 
         private void ConnectToWebSocket()
         {
-            Debug.Log("Connecting...");
             _webSocket.ConnectAsync();
         }
 
@@ -84,10 +82,10 @@ namespace Landau
             if (State != ProtocolState.DisconnectedState)
             {
                 State = ProtocolState.DisconnectedState;
-                Disconnected(this, null);
+                if (Disconnected != null)
+                    Disconnected(this, null);
             }
 
-            Debug.Log("Disconnect");
             yield return ConnectToWebSocketDelayed();
         }
 
@@ -96,7 +94,8 @@ namespace Landau
             if (State != ProtocolState.ConnectedState)
             {
                 State = ProtocolState.ConnectedState;
-                Connected(this, null);
+                if (Connected != null)
+                    Connected(this, null);
             }
             yield return null;
         }
