@@ -1,5 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System;
 using UnityEngine;
 using UnityEngine.Assertions;
 using UnityEngine.UI;
@@ -8,8 +7,10 @@ namespace Landau {
     public class UIManager : MonoBehaviour {
         static private UIManager _instance;
 
-        private Button StartButton;
-        private Button StopButton;
+        private Button _startButton;
+        private Text _statusText;
+
+        private ControlUnit _controlUnit;
 
         void Awake()
         {
@@ -23,29 +24,64 @@ namespace Landau {
                 Debug.Log("UIManager already instantiated");
                 Destroy(this);
             }
+
+            Main.Instance().SetUIManager(this);
         }
 
         // Use this for initialization
         void Start() {
-            Main.Instance().SetUIManager(this);
+            Main.Instance().ControlUnit().Protocol.Connected += StateChanged;
+            Main.Instance().ControlUnit().Protocol.Disconnected += StateChanged;
+            Main.Instance().SensorsMgr().Protocol.Connected += StateChanged;
+            Main.Instance().SensorsMgr().Protocol.Disconnected += StateChanged;
 
-            StartButton = GameObject.Find("StartControlButton").GetComponent<Button>();
-            Assert.IsNotNull(StartButton);
-            StopButton = GameObject.Find("StopControlButton").GetComponent<Button>();
-            Assert.IsNotNull(StopButton);
+            _startButton = GameObject.Find("StartControlButton").GetComponent<Button>();
+            Assert.IsNotNull(_startButton);
+            _statusText = GameObject.Find("StatusText").GetComponent<Text>();
+            Assert.IsNotNull(_statusText);
+
+            UpdateUiState();
         }
 
-        public void StartAutomaticControl()
+        public void ToggleControl()
         {
-            Main.Instance().ControlUnit().StartUnit();
-            StartButton.interactable = false;
-            StopButton.interactable = true;
+            if (!Main.Instance().ControlUnit()._running)
+                Main.Instance().ControlUnit().StartUnit();
+            else
+                Main.Instance().ControlUnit().StopUnit();
+
+            UpdateUiState();
         }
-        public void StopAutomaticControl()
+
+        public void UpdateUiState()
         {
-            Main.Instance().ControlUnit().StopUnit();
-            StartButton.interactable = true;
-            StopButton.interactable = false;
+            ProtocolState state = Main.Instance().ControlUnit().Protocol.State;
+            String text = "ControlUnit: ";
+
+            if (state != ProtocolState.ConnectedState)
+                text += "Not connected";
+            else
+                text += "Connected";
+
+            state = Main.Instance().SensorsMgr().Protocol.State;
+            text += "\nSensorsMgr: ";
+
+            if (state != ProtocolState.ConnectedState)
+                text += "Not connected";
+            else
+                text += "Connected";
+
+            _statusText.text = text;
+
+            if (Main.Instance().ControlUnit()._running)
+                _startButton.GetComponentInChildren<Text>().text = "Stop";
+            else
+                _startButton.GetComponentInChildren<Text>().text = "Start";
+        }
+
+        private void StateChanged(object sender, EventArgs e)
+        {
+            UpdateUiState();
         }
     }
 }

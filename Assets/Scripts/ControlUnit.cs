@@ -7,24 +7,28 @@ namespace Landau
 {
     public class ControlUnit : MonoBehaviour
     {
-        public bool m_running = false;
+        public bool _running = false;
         [SerializeField]
-        private CarController m_carController;
+        private CarController _carController;
 
         public float Steering { get; set; }
         public float Acceleration { get; set; }
         public float Brake { get; set; }
         public float HandBrake { get; set; }
         
-        private IControlUnitProtocol m_protocol;
+        private IControlUnitProtocol _protocol;
+        public IControlUnitProtocol Protocol { get { return _protocol; } }
+
+        private void Awake()
+        {
+            Main.Instance().SetControlUnit(this);
+            _protocol = Main.Factory.CreateControlProtocol(this);
+        }
 
         // Use this for initialization
         void Start()
         {
-            Main.Instance().SetControlUnit(this);
-            m_protocol = Main.Factory.CreateControlProtocol(this);
-
-            if (m_running)
+            if (_running)
                 StartUnit();
             else
                 ResetUnit();
@@ -33,10 +37,10 @@ namespace Landau
         // Update is called once per frame
         void Update()
         {
-            if (!m_running)
+            if (!_running)
                 return;
 
-            if (!m_carController)
+            if (!_carController)
             {
                 Debug.Log("No car controller set");
                 StopUnit();
@@ -44,24 +48,24 @@ namespace Landau
             }
 
             // Steering, Acceleration, Brake, Handbrake
-            m_carController.Move(Steering, Acceleration, Brake, HandBrake);
+            _carController.Move(Steering, Acceleration, Brake, HandBrake);
         }
 
         public void ResetUnit()
         {
-            m_running = false;
+            _running = false;
             Steering = Acceleration = Brake = HandBrake = 0;
 
-            if (m_carController)
-                m_carController.AutomaticControl = false;
+            if (_carController)
+                _carController.AutomaticControl = false;
         }
 
         public void StartUnit()
         {
-            m_running = true;
+            _running = true;
 
-            if (m_carController)
-                m_carController.AutomaticControl = true;
+            if (_carController)
+                _carController.AutomaticControl = true;
         }
 
         public void StopUnit()

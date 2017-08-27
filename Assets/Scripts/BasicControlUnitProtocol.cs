@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using UnityEngine;
 using WebSocketSharp;
 
@@ -7,14 +8,14 @@ namespace Landau
     public class BasicControlUnitProtocol : IControlUnitProtocol
     {
         public ProtocolState State { get; private set; }
-        public ControlUnit ControlUnit { get; set; }
-
-        private WebSocket m_webSocket = null;
-        private string m_webSocketUrl = "ws://localhost:5880";
-
         public event EventHandler Disconnected;
         public event EventHandler Connecting;
         public event EventHandler Connected;
+
+        public ControlUnit ControlUnit { get; set; }
+
+        private WebSocket _webSocket = null;
+        private string _webSocketUrl = "ws://localhost:5880";
 
         [Serializable]
         private class Command
@@ -42,32 +43,61 @@ namespace Landau
         public BasicControlUnitProtocol(ControlUnit controlUnit)
         {
             ControlUnit = controlUnit;
+            State = ProtocolState.DisconnectedState;
+
+            _webSocket = new WebSocket(_webSocketUrl);
+            _webSocket.OnMessage += (sender, e) =>
+                Decode(e.Data);
+
+            _webSocket.OnClose += ConnectionClosedThreaded;
+            _webSocket.OnError += ConnectionClosedThreaded;
+            _webSocket.OnOpen += ConnectionOpenedThreaded;
+
             ConnectToWebSocket();
         }
 
         private void ConnectToWebSocket()
         {
-            m_webSocket = new WebSocket(m_webSocketUrl);
-            m_webSocket.OnMessage += (sender, e) =>
-                Decode(e.Data);
-
-            m_webSocket.OnClose += ConnectionClosed;
-            m_webSocket.OnError += ConnectionClosed;
-            m_webSocket.OnOpen += ConnectionOpened;
-
-            m_webSocket.ConnectAsync();
+            _webSocket.ConnectAsync();
         }
 
-        private void ConnectionClosed(object sender, EventArgs e)
+        private IEnumerator ConnectToWebSocketDelayed()
         {
-            State = ProtocolState.DisconnectedState;
-            Disconnected(this, null);
+            yield return new WaitForSeconds(1);
+            ConnectToWebSocket();
         }
 
-        private void ConnectionOpened(object sender, EventArgs e)
+        private void ConnectionClosedThreaded(object sender, EventArgs e)
         {
-            State = ProtocolState.ConnectedState;
-            Connected(this, null);
+            UnityMainThreadDispatcher.Instance().Enqueue(ConnectionClosed());
+        }
+
+        private void ConnectionOpenedThreaded(object sender, EventArgs e)
+        {
+            UnityMainThreadDispatcher.Instance().Enqueue(ConnectionOpened());
+        }
+
+        private IEnumerator ConnectionClosed()
+        {
+            if (State != ProtocolState.DisconnectedState)
+            {
+                State = ProtocolState.DisconnectedState;
+                if (Disconnected != null)
+                    Disconnected(this, null);
+            }
+
+            yield return ConnectToWebSocketDelayed();
+        }
+
+        private IEnumerator ConnectionOpened()
+        {
+            if (State != ProtocolState.ConnectedState)
+            {
+                State = ProtocolState.ConnectedState;
+                if (Connected != null)
+                    Connected(this, null);
+            }
+            yield return null;
         }
 
         /*
