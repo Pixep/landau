@@ -41,5 +41,11 @@ namespace Landau
             SensorPayload payload = sensor.GetValue();
             _protocol.SendValue(payload);
         }
+
+        public void SendState()
+        {
+            SensorPayload payload = new SensorPayload(0, 0, false);
+            _protocol.SendValue(payload);
+        }
     }
 }

@@ -46,9 +46,14 @@ namespace Landau {
         public void ToggleControl()
         {
             if (!Main.Instance().ControlUnit()._running)
+            {
                 Main.Instance().ControlUnit().StartUnit();
+                Main.Instance().SensorsMgr().SendState();
+            }
             else
+            {
                 Main.Instance().ControlUnit().StopUnit();
+            }
 
             UpdateUiState();
         }
