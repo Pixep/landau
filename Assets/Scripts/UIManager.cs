@@ -8,7 +8,7 @@ namespace Landau {
         static private UIManager _instance;
 
         private Button _startButton;
-        private Button _stopButton;
+        private Text _statusText;
 
         private ControlUnit _controlUnit;
 
@@ -35,8 +35,10 @@ namespace Landau {
 
             _startButton = GameObject.Find("StartControlButton").GetComponent<Button>();
             Assert.IsNotNull(_startButton);
-            _stopButton = GameObject.Find("StopControlButton").GetComponent<Button>();
-            Assert.IsNotNull(_stopButton);
+            _statusText = GameObject.Find("StatusText").GetComponent<Text>();
+            Assert.IsNotNull(_statusText);
+
+            UpdateUiState();
         }
 
         public void ToggleControl()
@@ -46,34 +48,38 @@ namespace Landau {
             else
                 Main.Instance().ControlUnit().StopUnit();
 
-            UpdateButtonsState();
+            UpdateUiState();
         }
-        public void UpdateButtonsState()
+
+        public void UpdateUiState()
         {
             ProtocolState state = Main.Instance().ControlUnit().Protocol.State;
-            String text = "";
+            String text = "ControlUnit: ";
             if (state != ProtocolState.ConnectedState)
             {
-                text = "CU offline";
-                _startButton.interactable = false;
+                text += "Not connected";
             }
-            else if (Main.Instance().ControlUnit()._running)
+            else
             {
-                text = "Stop";
+                text += "Connected";
+            }
+            _statusText.text = text;
+
+            if (Main.Instance().ControlUnit()._running)
+            {
+                _startButton.GetComponentInChildren<Text>().text = "Stop";
                 _startButton.interactable = false;
             }
             else
             {
-                text = "Start";
+                _startButton.GetComponentInChildren<Text>().text = "Start";
                 _startButton.interactable = true;
             }
-
-            _startButton.GetComponentInChildren<Text>().text = text;
         }
 
         private void ControlUnitStateChanged(object sender, EventArgs e)
         {
-            UpdateButtonsState();
+            UpdateUiState();
         }
     }
 }
