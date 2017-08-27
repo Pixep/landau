@@ -30,8 +30,10 @@ namespace Landau {
 
         // Use this for initialization
         void Start() {
-            Main.Instance().ControlUnit().Protocol.Connected += ControlUnitStateChanged;
-            Main.Instance().ControlUnit().Protocol.Disconnected += ControlUnitStateChanged;
+            Main.Instance().ControlUnit().Protocol.Connected += StateChanged;
+            Main.Instance().ControlUnit().Protocol.Disconnected += StateChanged;
+            Main.Instance().SensorsMgr().Protocol.Connected += StateChanged;
+            Main.Instance().SensorsMgr().Protocol.Disconnected += StateChanged;
 
             _startButton = GameObject.Find("StartControlButton").GetComponent<Button>();
             Assert.IsNotNull(_startButton);
@@ -63,6 +65,17 @@ namespace Landau {
             {
                 text += "Connected";
             }
+
+            state = Main.Instance().SensorsMgr().Protocol.State;
+            text += "\nSensorsMgr: ";
+            if (state != ProtocolState.ConnectedState)
+            {
+                text += "Not connected";
+            }
+            else
+            {
+                text += "Connected";
+            }
             _statusText.text = text;
 
             if (Main.Instance().ControlUnit()._running)
@@ -77,7 +90,7 @@ namespace Landau {
             }
         }
 
-        private void ControlUnitStateChanged(object sender, EventArgs e)
+        private void StateChanged(object sender, EventArgs e)
         {
             UpdateUiState();
         }

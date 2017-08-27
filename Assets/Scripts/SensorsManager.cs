@@ -7,6 +7,8 @@ namespace Landau
         private ISensorsProtocol _protocol;
         private List<ISensor> _sensors = new List<ISensor>();
 
+        public ISensorsProtocol Protocol { get { return _protocol; } }
+
         static private SensorsManager m_instance;
         static public SensorsManager Instance()
         {
