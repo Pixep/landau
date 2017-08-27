@@ -16,7 +16,7 @@ namespace Landau
         public byte[] value;
     }
 
-    public interface ISensorsProtocol
+    public interface ISensorsProtocol: IProtocol
     {
         void SendValue(SensorPayload payload);
     }
