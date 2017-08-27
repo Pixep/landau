@@ -1,15 +1,11 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Text;
-using UnityEngine;
+﻿using System.Collections.Generic;
 
 namespace Landau
 {
     public class SensorsManager : ISensorObserver
     {
-        private ISensorsProtocol m_protocol;
-        private List<ISensor> m_sensors = new List<ISensor>();
+        private ISensorsProtocol _protocol;
+        private List<ISensor> _sensors = new List<ISensor>();
 
         static private SensorsManager m_instance;
         static public SensorsManager Instance()
@@ -23,13 +19,13 @@ namespace Landau
         SensorsManager()
         {
             m_instance = this;
-            m_protocol = Main.Factory.CreateSensorsProtocol(this);
+            _protocol = Main.Factory.CreateSensorsProtocol(this);
         }
 
         // Register a sensor
         public void RegisterSensor(ISensor sensor)
         {
-            m_sensors.Add(sensor);
+            _sensors.Add(sensor);
             sensor.Observer = this;
         }
 
@@ -41,7 +37,7 @@ namespace Landau
         public void Notify(ISensor sensor)
         {
             SensorPayload payload = sensor.GetValue();
-            m_protocol.SendValue(payload);
+            _protocol.SendValue(payload);
         }
     }
 }
