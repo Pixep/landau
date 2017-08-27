@@ -11,8 +11,8 @@ namespace Landau
         public ProtocolState State { get; private set; }
         public ControlUnit ControlUnit { get; set; }
 
-        private WebSocket m_webSocket = null;
-        private string m_webSocketUrl = "ws://localhost:5880";
+        private WebSocket _webSocket = null;
+        private string _webSocketUrl = "ws://localhost:5880";
 
         public event EventHandler Disconnected;
         public event EventHandler Connecting;
@@ -45,20 +45,28 @@ namespace Landau
         {
             ControlUnit = controlUnit;
             State = ProtocolState.DisconnectedState;
+
+            _webSocket = new WebSocket(_webSocketUrl);
+            _webSocket.OnMessage += (sender, e) =>
+                Decode(e.Data);
+
+            _webSocket.OnClose += ConnectionClosedThreaded;
+            _webSocket.OnError += ConnectionClosedThreaded;
+            _webSocket.OnOpen += ConnectionOpenedThreaded;
+
             ConnectToWebSocket();
         }
 
         private void ConnectToWebSocket()
         {
-            m_webSocket = new WebSocket(m_webSocketUrl);
-            m_webSocket.OnMessage += (sender, e) =>
-                Decode(e.Data);
+            Debug.Log("Connecting...");
+            _webSocket.ConnectAsync();
+        }
 
-            m_webSocket.OnClose += ConnectionClosedThreaded;
-            m_webSocket.OnError += ConnectionClosedThreaded;
-            m_webSocket.OnOpen += ConnectionOpenedThreaded;
-
-            m_webSocket.ConnectAsync();
+        private IEnumerator ConnectToWebSocketDelayed()
+        {
+            yield return new WaitForSeconds(1);
+            ConnectToWebSocket();
         }
 
         private void ConnectionClosedThreaded(object sender, EventArgs e)
@@ -73,15 +81,23 @@ namespace Landau
 
         private IEnumerator ConnectionClosed()
         {
-            State = ProtocolState.DisconnectedState;
-            Disconnected(this, null);
-            yield return null;
+            if (State != ProtocolState.DisconnectedState)
+            {
+                State = ProtocolState.DisconnectedState;
+                Disconnected(this, null);
+            }
+
+            Debug.Log("Disconnect");
+            yield return ConnectToWebSocketDelayed();
         }
 
         private IEnumerator ConnectionOpened()
         {
-            State = ProtocolState.ConnectedState;
-            Connected(this, null);
+            if (State != ProtocolState.ConnectedState)
+            {
+                State = ProtocolState.ConnectedState;
+                Connected(this, null);
+            }
             yield return null;
         }
 
